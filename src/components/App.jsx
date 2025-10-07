@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import reactLogo from './../assets/react.svg';
 import viteLogo from '/vite.svg';
 import './../styles/App.css';
 import './../styles/vendor.css';
 import gifEmerald from './../assets/emerald.gif'
+import gifExplode from './../assets/bomb-explode.gif'
+import gifBomb from './../assets/bomb.gif'
+import pngBomb from './../assets/bomb.gif'
 
 function App() {
+  const [traps, setTraps] = useState(6);
   const [balance, setBalance] = useState(10.0000000);
   const [textButton, setTextButton] = useState("Bet")
-  const [buttonActive, setButtonActive] = useState(false);
+  const [buttonActive, setButtonActive] = useState(0);
+  const [cellDisplay, setCellDisplay] = useState({});
+  const [winWindow, setWinWindow] = useState(false)
+  const [countActiveCells, setCountActiveCells] = useState(0)
   const [cellStatus, setCellStatus] = useState({
     1 : false, 
     2 : false, 
@@ -37,19 +44,95 @@ function App() {
     25 : false,
   });
 
+  useEffect(() =>{
+    if (countActiveCells == 26-traps){
+      finishAll();
+    }
+    setCountActiveCells(prev => prev + 1);
+  }, [cellStatus]);
+
+  const createEmptyCells = (count = 25) => {
+    const obj = {};
+    for (let i = 1; i <= count; i++) {
+      obj[i] = false;
+    }
+    return obj;
+  };
+
   const clickCell = (id) =>{
+    if (buttonActive){
     setCellStatus(prev => ({
       ...prev,
       [id]: true
     }));
-  }
-
-  const btnActive = () =>{
-    setButtonActive(true);
     setTextButton("💣");
     setTimeout(() =>{
-      setTextButton("Chashout");
-    }, 500)
+        setTextButton("Chashout");
+      }, 200)
+    }
+  }
+
+  const generateBombsAndEmeralds = (cellStatus, traps) => {
+  // 1. Копируем исходные данные
+  const updatedDisplay = {};
+
+  // 2. Берём все id, где false (ещё не открытые клетки)
+  const availableKeys = Object.keys(cellStatus).filter(key => !cellStatus[key]);
+
+  // 3. Перемешиваем их (простой способ)
+  const bombKeys = availableKeys
+    .sort(() => Math.random() - 0.5)
+    .slice(0, traps); // первые N — бомбы
+
+  // 4. Для каждой доступной клетки
+  availableKeys.forEach(key => {
+    // setCellDisplay(prev => ({
+    //   ...prev,
+    //   [key]: "close"
+    // }));
+
+    setTimeout(() => {
+      setCellDisplay(prev => ({
+        ...prev,
+        [key]: bombKeys.includes(key) ? "bomb" : "emerald"
+      }));
+    }, 100);
+  });
+  }
+
+  const finishAll = () =>{
+    setWinWindow(true);
+    setButtonActive(2);
+    generateBombsAndEmeralds(cellStatus, traps);
+    setCountActiveCells(0);
+    setTimeout(() =>{
+        setTextButton("Bet");
+      }, 210)
+  }
+
+  const btnActive = () => {
+
+    if (buttonActive == 0){
+      setCellDisplay({})
+      setButtonActive(1);
+      setTextButton("💣");
+          setTimeout(() =>{
+          setTextButton("Chashout");
+      }, 200)
+    }
+
+    if (buttonActive == 1){
+      finishAll();
+    }
+
+    if (buttonActive == 2){
+      setButtonActive(0);
+      setTextButton("Bet");
+      setCellStatus(createEmptyCells());
+      setCellDisplay({});
+      setWinWindow(false)
+    }
+
   }
 
   return (
@@ -65,7 +148,7 @@ function App() {
       <div className="dropdown dropdown-wallets">
         <button className="btn btn-secondary dropdown-toggle wallets-btn" id="dropdownWallets" data-bs-toggle="dropdown" aria-expanded="false" type="button">
           <div className="container-balance">
-            <span>{balance} <i className="crypto-logo" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Crect width=\"20\" height=\"20\" rx=\"10\" fill=\"%2350AF95\"/%3E%3Cpath fillRule=\"evenodd\" clipRule=\"evenodd\" d=\"M11.4878 10.3747C11.4171 10.3802 11.0518 10.4028 10.2369 10.4028C9.58878 10.4028 9.1286 10.3826 8.96715 10.3747C6.46236 10.2607 4.59276 9.8096 4.59276 9.26948C4.59276 8.72937 6.46236 8.27886 8.96715 8.16304V9.92542C9.13096 9.93762 9.59998 9.96627 10.2481 9.96627C11.0259 9.96627 11.4154 9.93274 11.4855 9.92603V8.16426C13.985 8.27947 15.8505 8.73059 15.8505 9.26948C15.8505 9.80838 13.9856 10.2595 11.4855 10.3741L11.4878 10.3747ZM11.4878 7.98198V6.40492H14.976V4H5.47895V6.40492H8.96656V7.98137C6.13181 8.1161 4 8.69706 4 9.39323C4 10.0894 6.13181 10.6698 8.96656 10.8051V15.8588H11.4873V10.8033C14.3155 10.6685 16.4438 10.0882 16.4438 9.39262C16.4438 8.69706 14.3173 8.11671 11.4873 7.98137L11.4878 7.98198Z\" fill=\"white\"/%3E%3C/svg%3E')"}}></i></span>
+            <span>{balance.toFixed(7)} <i className="crypto-logo" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Crect width=\"20\" height=\"20\" rx=\"10\" fill=\"%2350AF95\"/%3E%3Cpath fillRule=\"evenodd\" clipRule=\"evenodd\" d=\"M11.4878 10.3747C11.4171 10.3802 11.0518 10.4028 10.2369 10.4028C9.58878 10.4028 9.1286 10.3826 8.96715 10.3747C6.46236 10.2607 4.59276 9.8096 4.59276 9.26948C4.59276 8.72937 6.46236 8.27886 8.96715 8.16304V9.92542C9.13096 9.93762 9.59998 9.96627 10.2481 9.96627C11.0259 9.96627 11.4154 9.93274 11.4855 9.92603V8.16426C13.985 8.27947 15.8505 8.73059 15.8505 9.26948C15.8505 9.80838 13.9856 10.2595 11.4855 10.3741L11.4878 10.3747ZM11.4878 7.98198V6.40492H14.976V4H5.47895V6.40492H8.96656V7.98137C6.13181 8.1161 4 8.69706 4 9.39323C4 10.0894 6.13181 10.6698 8.96656 10.8051V15.8588H11.4873V10.8033C14.3155 10.6685 16.4438 10.0882 16.4438 9.39262C16.4438 8.69706 14.3173 8.11671 11.4873 7.98137L11.4878 7.98198Z\" fill=\"white\"/%3E%3C/svg%3E')"}}></i></span>
           </div>
         </button>
         <a className="openCurrency" data-ember-action="" data-ember-action-6="6"></a>
@@ -170,189 +253,332 @@ function App() {
   </section>
   <div className="container-sm">
     <section className="game-section">
+      {winWindow && (
+        <div class="winner-block">
+            <div class="close-winner"></div>
+              <div class="winner-container">
+                  <div class="winner-title">22227x</div>
+                  <div class="line-container">
+                      <div class="winner-line"></div>
+                  </div>
+                  <div class="winner-text">11.000000<span class="crypto-logo">💎</span></div>
+              </div>
+          </div>
+        )}
     <div className="game ">
         <div className="row-game">
           <div className="cell" onClick={() => clickCell(1)}>
-            <div className={`cell-object cell0-0 ${cellStatus[1] == true ? 'active' : 'inactive'}`}>
-             {cellStatus[1] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell0-0 ${cellStatus[1] == true ? 'active' : ''}`}>
+              {/* .game.non-animate .emerald
+              .effect-bomb
+              <div className="bomb"></div> */}
+              {cellStatus[1] && <div className="emerald"></div>}
+
+              {!cellStatus[1] && (
+                <>
+                {cellDisplay[1] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[1] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
+
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(2)}>
-            <div className={`cell-object cell0-1 ${cellStatus[2] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[2] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell0-1 ${cellStatus[2] == true ? 'active' : ''}`}>
+              
+             {cellStatus[2] && <div className="emerald"></div>}
+
+              {!cellStatus[2] && (
+                <>
+                {cellDisplay[2] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[2] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
+
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(3)}>
-            <div className={`cell-object cell0-2 ${cellStatus[3] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[3] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell0-2 ${cellStatus[3] == true ? 'active' : ''}`}>
+             {cellStatus[3] && <div className="emerald"></div>}
+
+              {!cellStatus[3] && (
+                <>
+                {cellDisplay[3] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[3] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(4)}>
-            <div className={`cell-object cell0-3 ${cellStatus[4] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[4] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell0-3 ${cellStatus[4] == true ? 'active' : ''}`}>
+             {cellStatus[4] && <div className="emerald"></div>}
+
+              {!cellStatus[4] && (
+                <>
+                {cellDisplay[4] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[4] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(5)}>
-            <div className={`cell-object cell0-4 ${cellStatus[5] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[5] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell0-4 ${cellStatus[5] == true ? 'active' : ''}`}>
+             {cellStatus[5] && <div className="emerald"></div>}
+
+              {!cellStatus[5] && (
+                <>
+                {cellDisplay[5] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[5] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
         </div>
         <div className="row-game">
           <div className="cell" onClick={() => clickCell(6)}>
-            <div className={`cell-object cell1-0 ${cellStatus[6] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[6] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell1-0 ${cellStatus[6] == true ? 'active' : ''}`}>
+             {cellStatus[6] && <div className="emerald"></div>}
+
+              {!cellStatus[6] && (
+                <>
+                {cellDisplay[6] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[6] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(7)}>
-            <div className={`cell-object cell1-1 ${cellStatus[7] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[7] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell1-1 ${cellStatus[7] == true ? 'active' : ''}`}>
+             {cellStatus[7] && <div className="emerald"></div>}
+
+              {!cellStatus[7] && (
+                <>
+                {cellDisplay[7] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[7] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(8)}>
-            <div className={`cell-object cell1-2 ${cellStatus[8] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[8] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell1-2 ${cellStatus[8] == true ? 'active' : ''}`}>
+             {cellStatus[8] && <div className="emerald"></div>}
+
+              {!cellStatus[8] && (
+                <>
+                {cellDisplay[8] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[8] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(9)}>
-            <div className={`cell-object cell1-3 ${cellStatus[9] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[9] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell1-3 ${cellStatus[9] == true ? 'active' : ''}`}>
+             {cellStatus[9] && <div className="emerald"></div>}
+
+              {!cellStatus[9] && (
+                <>
+                {cellDisplay[9] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[9] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(10)}>
-            <div className={`cell-object cell1-4 ${cellStatus[10] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[10] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell1-4 ${cellStatus[10] == true ? 'active' : ''}`}>
+             {cellStatus[10] && <div className="emerald"></div>}
+
+              {!cellStatus[10] && (
+                <>
+                {cellDisplay[10] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[10] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
         </div>
         <div className="row-game">
           <div className="cell" onClick={() => clickCell(11)}>
-            <div className={`cell-object cell2-0 ${cellStatus[11] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[11] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell2-0 ${cellStatus[11] == true ? 'active' : ''}`}>
+             {cellStatus[11] && <div className="emerald"></div>}
+
+              {!cellStatus[11] && (
+                <>
+                {cellDisplay[11] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[11] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(12)}>
-            <div className={`cell-object cell2-1 ${cellStatus[12] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[12] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell2-1 ${cellStatus[12] == true ? 'active' : ''}`}>
+             {cellStatus[12] && <div className="emerald"></div>}
+
+              {!cellStatus[12] && (
+                <>
+                {cellDisplay[12] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[12] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(13)}>
-            <div className={`cell-object cell2-2 ${cellStatus[13] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[13] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell2-2 ${cellStatus[13] == true ? 'active' : ''}`}>
+             {cellStatus[13] && <div className="emerald"></div>}
+
+              {!cellStatus[13] && (
+                <>
+                {cellDisplay[13] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[13] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(14)}>
-            <div className={`cell-object cell2-3 ${cellStatus[14] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[14] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell2-3 ${cellStatus[14] == true ? 'active' : ''}`}>
+             {cellStatus[14] && <div className="emerald"></div>}
+
+              {!cellStatus[14] && (
+                <>
+                {cellDisplay[14] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[14] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(15)}>
-            <div className={`cell-object cell2-4 ${cellStatus[15] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[15] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell2-4 ${cellStatus[15] == true ? 'active' : ''}`}>
+             {cellStatus[15] && <div className="emerald"></div>}
+
+              {!cellStatus[15] && (
+                <>
+                {cellDisplay[15] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[15] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
         </div>
         <div className="row-game">
           <div className="cell" onClick={() => clickCell(16)}>
-            <div className={`cell-object cell3-0 ${cellStatus[16] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[16] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell3-0 ${cellStatus[16] == true ? 'active' : ''}`}>
+             {cellStatus[16] && <div className="emerald"></div>}
+
+              {!cellStatus[16] && (
+                <>
+                {cellDisplay[16] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[16] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(17)}>
-            <div className={`cell-object cell3-1 ${cellStatus[17] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[17] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell3-1 ${cellStatus[17] == true ? 'active' : ''}`}>
+             {cellStatus[17] && <div className="emerald"></div>}
+
+              {!cellStatus[17] && (
+                <>
+                {cellDisplay[17] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[17] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(18)}>
-            <div className={`cell-object cell3-2 ${cellStatus[18] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[18] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell3-2 ${cellStatus[18] == true ? 'active' : ''}`}>
+             {cellStatus[18] && <div className="emerald"></div>}
+
+              {!cellStatus[18] && (
+                <>
+                {cellDisplay[18] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[18] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(19)}>
-            <div className={`cell-object cell3-3 ${cellStatus[19] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[19] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell3-3 ${cellStatus[19] == true ? 'active' : ''}`}>
+             {cellStatus[19] && <div className="emerald"></div>}
+
+              {!cellStatus[19] && (
+                <>
+                {cellDisplay[19] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[19] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(20)}>
-            <div className={`cell-object cell3-4 ${cellStatus[20] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[20] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell3-4 ${cellStatus[20] == true ? 'active' : ''}`}>
+             {cellStatus[20] && <div className="emerald"></div>}
+
+              {!cellStatus[20] && (
+                <>
+                {cellDisplay[20] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[20] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
         </div>
         <div className="row-game">
           <div className="cell" onClick={() => clickCell(21)}>
-            <div className={`cell-object cell4-0 ${cellStatus[21] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[21] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell4-0 ${cellStatus[21] == true ? 'active' : ''}`}>
+             {cellStatus[21] && <div className="emerald"></div>}
+
+              {!cellStatus[21] && (
+                <>
+                {cellDisplay[21] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[21] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(22)}>
-            <div className={`cell-object cell4-1 ${cellStatus[22] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[22] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell4-1 ${cellStatus[22] == true ? 'active' : ''}`}>
+             {cellStatus[22] && <div className="emerald"></div>}
+
+              {!cellStatus[22] && (
+                <>
+                {cellDisplay[22] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[22] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(23)}>
-            <div className={`cell-object cell4-2 ${cellStatus[23] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[23] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell4-2 ${cellStatus[23] == true ? 'active' : ''}`}>
+             {cellStatus[23] && <div className="emerald"></div>}
+
+              {!cellStatus[23] && (
+                <>
+                {cellDisplay[23] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[23] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(24)}>
-            <div className={`cell-object cell4-3 ${cellStatus[24] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[24] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell4-3 ${cellStatus[24] == true ? 'active' : ''}`}>
+             {cellStatus[24] && <div className="emerald"></div>}
+
+              {!cellStatus[24] && (
+                <>
+                {cellDisplay[24] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[24] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
           <div className="cell" onClick={() => clickCell(25)}>
-            <div className={`cell-object cell4-4 ${cellStatus[25] == true ? 'active' : 'inactive'}`}>
-              {cellStatus[25] && (
-               <img src={gifEmerald}></img>
-             )}
+            <div className={`cell-object cell4-4 ${cellStatus[25] == true ? 'active' : ''}`}>
+             {cellStatus[25] && <div className="emerald"></div>}
+
+              {!cellStatus[25] && (
+                <>
+                {cellDisplay[25] === "emerald" && <div className="emerald"></div>}
+                {cellDisplay[25] === "bomb" && <div className="bomb"></div>}
+                </>
+              )}
             </div>
           </div>
         </div>

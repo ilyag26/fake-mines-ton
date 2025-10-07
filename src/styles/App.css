@@ -14578,13 +14578,6 @@ svg+.form-control {
     padding-top: 100%;
 }
 
-.cell-object img {
-  position: absolute;
-  transform: translate(15%, -110%);
-  width: 80%;
-  height: 80%;
-}
-
 .game .cell .cell-object:active,.game .cell-preview .cell-object:active {
     transform: scale(1.08) translate(0,-6px);
     background-color: #45515f;
@@ -14625,7 +14618,7 @@ svg+.form-control {
     transform: translate(-50%,-50%);
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url(../assets/images/emerald-bb74fdc2a06ad8867473a3b8fad75c81.gif)
+    background-image: url("./../assets/emerald.gif")
 }
 
 .game .cell .cell-object .emerald.non-real,.game .cell-preview .cell-object .emerald.non-real {
@@ -14642,7 +14635,7 @@ svg+.form-control {
     transform: translate(-50%,-50%);
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url(../assets/images/bomb-b890c97894890791871d317bdf440b47.png)!important;
+    background-image: url("./../assets/bomb.png")!important;
     z-index: 2;
     opacity: 1
 }
@@ -14653,7 +14646,7 @@ svg+.form-control {
 
 .game .cell .cell-object .effect-bomb,.game .cell-preview .cell-object .effect-bomb {
     content: " ";
-    background-image: url(../assets/images/bomb-explode-cd4a489286f6503889193a7cfd3dda0a.gif);
+    background-image: url("./../assets/bomb-explode.gif");
     width: 180px;
     height: 180px;
     position: absolute;
@@ -14670,7 +14663,7 @@ svg+.form-control {
 }
 
 .game.non-animate .emerald {
-    background-image: url(../assets/images/emerald-d3d52d9b8d41ea9a522f173f38721a8b.png)!important
+    background-image: url("./../assets/emerald.png")!important
 }
 
 .form-control {
