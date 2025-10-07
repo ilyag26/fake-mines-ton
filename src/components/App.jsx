@@ -2,13 +2,13 @@ import { use, useEffect, useState } from 'react';
 import reactLogo from './../assets/react.svg';
 import viteLogo from '/vite.svg';
 import './../styles/App.css';
-import gifEmerald from './../assets/emerald.gif'
-import gifExplode from './../assets/bomb-explode.gif'
-import gifBomb from './../assets/bomb.gif'
-import pngBomb from './../assets/bomb.gif'
+import gifEmerald from './../assets/emerald.gif';
+import gifExplode from './../assets/bomb-explode.gif';
+import gifBomb from './../assets/bomb.gif';
+import pngBomb from './../assets/bomb.gif';
 
 function App() {
-  const [traps, setTraps] = useState(6);
+  const [traps, setTraps] = useState(3);
   const [balance, setBalance] = useState(10.0000000);
   const [textButton, setTextButton] = useState("Bet")
   const [buttonActive, setButtonActive] = useState(0);
@@ -49,6 +49,10 @@ function App() {
     }
     setCountActiveCells(prev => prev + 1);
   }, [cellStatus]);
+
+  const handleChangeBomb = (e) =>{
+    setTraps(Number(e.target.value));
+  }
 
   const createEmptyCells = (count = 25) => {
     const obj = {};
@@ -253,14 +257,14 @@ function App() {
   <div className="container-sm">
     <section className="game-section">
       {winWindow && (
-        <div class="winner-block">
-            <div class="close-winner"></div>
-              <div class="winner-container">
-                  <div class="winner-title">22227x</div>
-                  <div class="line-container">
-                      <div class="winner-line"></div>
+        <div className="winner-block">
+            <div className="close-winner"></div>
+              <div className="winner-container">
+                  <div className="winner-title">22227x</div>
+                  <div className="line-container">
+                      <div className="winner-line"></div>
                   </div>
-                  <div class="winner-text">11.000000<span class="crypto-logo">💎</span></div>
+                  <div className="winner-text">11.000000<span className="crypto-logo">💎</span></div>
               </div>
           </div>
         )}
@@ -616,31 +620,12 @@ function App() {
       <div className="row align-items-start">
         <div className="mb-3 bet-container">
           <label className="form-label">Bombs</label>
-          <select className="form-select form-control" id="bombContainer" aria-label="Количество бомб">
-            <option>1</option>
-            <option>2</option>
-            <option defaultValue>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>7</option>
-            <option>8</option>
-            <option>9</option>
-            <option>10</option>
-            <option>11</option>
-            <option>12</option>
-            <option>13</option>
-            <option>14</option>
-            <option>15</option>
-            <option>16</option>
-            <option>17</option>
-            <option>18</option>
-            <option>19</option>
-            <option>20</option>
-            <option>21</option>
-            <option>22</option>
-            <option>23</option>
-            <option>24</option>
+          <select className="form-select form-control" id="bombContainer" value={traps} aria-label="Количество бомб" onChange={handleChangeBomb}>
+            {Array.from({ length: 24 }, (_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}
+              </option>
+            ))}
           </select>
         </div>
       </div>
