@@ -2,7 +2,6 @@ import { use, useEffect, useState } from 'react';
 import reactLogo from './../assets/react.svg';
 import viteLogo from '/vite.svg';
 import './../styles/App.css';
-import './../styles/vendor.css';
 import gifEmerald from './../assets/emerald.gif'
 import gifExplode from './../assets/bomb-explode.gif'
 import gifBomb from './../assets/bomb.gif'
