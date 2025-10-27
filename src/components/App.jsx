@@ -26,6 +26,8 @@ function App() {
     16: false, 17: false, 18: false, 19: false, 20: false,
     21: false, 22: false, 23: false, 24: false, 25: false,
   });
+  const tooltipYHash = -window.innerHeight / 1.54;
+  const tooltipYSeed = -window.innerHeight / 1.78;
   const [seedServer, setSeedServer] = useState("3c055edd446343e418bba6c2829ae51655042739e58e32442265f275ff2bd322");
   const [hashServer, setHashServer] = useState("vtkQbieCbONIiD");
   const coefMultiplicator = {
@@ -518,21 +520,41 @@ function App() {
       setShowFairness(true);
   }
 
-  const seedCopyTimer = () => {
-    navigator.clipboard.writeText(seedServer);
-    setShowCopySeed(true);
-    setTimeout(() => {
-      setShowCopySeed(false);
-    }, 300)
-  }
+  const hashBtnRef = useRef(null);
+  const seedBtnRef = useRef(null);
 
+  const [tooltipHash, setTooltipHash] = useState(false);
+  const [tooltipSeed, setTooltipSeed] = useState(false);
+
+  const [tooltipPosHash, setTooltipPosHash] = useState({ x: 0, y: 0 });
+  const [tooltipPosSeed, setTooltipPosSeed] = useState({ x: 0, y: 0 });
+
+  // Копирование hashServer
   const hashCopyTimer = () => {
     navigator.clipboard.writeText(hashServer);
-    setShowCopyHash(true);
-    setTimeout(() => {
-      setShowCopyHash(false);
-    }, 300)
-  }
+
+    if (hashBtnRef.current) {
+      const rect = hashBtnRef.current.getBoundingClientRect();
+      setTooltipPosHash({ x: rect.left + rect.width });
+    }
+
+    setTooltipHash(true);
+    setTimeout(() => setTooltipHash(false), 400);
+  };
+
+  // Копирование seedServer
+  const seedCopyTimer = () => {
+    navigator.clipboard.writeText(seedServer);
+
+    if (seedBtnRef.current) {
+      const rect = seedBtnRef.current.getBoundingClientRect();
+      setTooltipPosSeed({ x: rect.left + rect.width / 2, y: rect.top - 8 });
+    }
+
+    setTooltipSeed(true);
+    setTimeout(() => setTooltipSeed(false), 400);
+  };
+
 
   const showBalanseSwitcher = () => {
     if (!showBalanceChanger) {
@@ -582,34 +604,86 @@ function App() {
 
               <section className="white none-padding">
                 <div className="row">
+                  {/* Client Seed */}
                   <div className="col col-12 mb-3 bet-container">
                     <label className="form-label">Valid Client Seed</label>
-                    <div className="btn-display-input-container btn-copy">
+                    <div className="btn-display-input-container btn-copy" style={{ position: 'relative' }}>
+                      <button className="form-control display-input copy-status" type="button">
+                        <div className="input-text">{hashServer}</div>
+                      </button>
 
-                      <button className="form-control display-input copy-status" id="copyInputPersonalKey" type="button" >
-                        <div className="input-text">
-                          {hashServer}
+                      <button
+                        ref={hashBtnRef}
+                        className="copy-btn copy-btn-special-1"
+                        title="Address copied!"
+                        onClick={hashCopyTimer}
+                      />
+
+                      {tooltipHash && (
+                        <div
+                          className="tooltip bs-tooltip-auto fade show"
+                          role="tooltip"
+                          style={{
+                            position: "absolute",right: 0,bottom: "110%",margin: 0,
+                          }}
+                        >
+                          <div
+                            className="tooltip-arrow"
+                            style={{ position: "absolute", right: "8px", transform: "translateX(-50%)" }}
+                          />
+                          <div className="tooltip-inner">Address copied!</div>
                         </div>
-                      </button>
-                      <button className="copy-btn copy-btn-special-1" data-bs-placement="top" title="Address copied!" onClick={hashCopyTimer}></button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Server Seed */}
                   <div className="col col-12 mb-3 bet-container">
-                    <label className="form-label">Valid Server Seed <span class="hash-label">(hashed)</span></label>
-                    <div className="btn-display-input-container btn-copy">
-                      <button className="form-control display-input" id="copyInputBackendSeed" type="button">
-                        <div className="input-text">
-                          {seedServer}
-                        </div>
+                    <label className="form-label">
+                      Valid Server Seed <span className="hash-label">(hashed)</span>
+                    </label>
+                    <div className="btn-display-input-container btn-copy" style={{ position: 'relative' }}>
+                      <button className="form-control display-input" type="button">
+                        <div className="input-text">{seedServer}</div>
                       </button>
-                      <button className="copy-btn copy-btn-special-2" data-bs-placement="top" title="Address copied!" data-bs-toggle="tooltip" type="button" onClick={seedCopyTimer}></button>
+
+                      <button
+                        ref={seedBtnRef}
+                        className="copy-btn copy-btn-special-2"
+                        title="Address copied!"
+                        onClick={seedCopyTimer}
+                      />
+
+                      {tooltipSeed && (
+                        <div
+                          className="tooltip bs-tooltip-auto fade show"
+                          role="tooltip"
+                          style={{
+                            position: "absolute",right: 0,bottom: "110%",margin: 0,
+                          }}
+                        >
+                          <div
+                            className="tooltip-arrow"
+                            style={{ position: "absolute", right: "8px", transform: "translateX(-50%)" }}
+                          />
+                          <div className="tooltip-inner">Address copied!</div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="mb-3 bet-container">
+
+                  {/* Bets Placed */}
+                  <div className="col col-12 mb-3 bet-container">
                     <label className="form-label">Number of Bets Placed with this Pair of Seeds</label>
-                    <input id="ember98" className="ember-text-field ember-view form-control form-control-updated" disabled="true" defaultValue={betsPlaced} type="text" />
+                    <input
+                      className="ember-text-field ember-view form-control form-control-updated"
+                      disabled
+                      defaultValue={betsPlaced}
+                      type="text"
+                    />
                   </div>
                 </div>
+
               </section>
               <section className="white none-padding">
                 <h3 className="section-title">Change Pair of Seeds</h3>
@@ -1305,19 +1379,6 @@ function App() {
           </div>
         </div>
       </div>
-      <div className={`tooltip bs-tooltip-auto fade ${showCopyHash ? 'show' : ''}`} role="tooltip" id="tooltip37517" data-popper-placemant="top" style={{ position: 'absolute', inset: 'auto auto 0px 0px', margin: 0, transform: 'translate3d(256.667px, -580.333px, 0px)' }}>
-        <div className="tooltip-arrow" style={{ position: 'absolute', left: 0, transform: 'translate3d(73.6667px, 0px, 0px)', }}>
-
-        </div>
-        <div className="tooltip-inner">Adress copied!</div>
-      </div>
-      <div className={`tooltip bs-tooltip-auto fade ${showCopySeed ? 'show' : ''}`} role="tooltip" id="tooltip37517" data-popper-placemant="top" style={{ position: 'absolute', inset: 'auto auto 0px 0px', margin: 0, transform: 'translate3d(256.667px, -500.667px, 0px)' }}>
-        <div className="tooltip-arrow" style={{ position: 'absolute', left: 0, transform: 'translate3d(73.6667px, 0px, 0px)', }}>
-
-        </div>
-        <div className="tooltip-inner">Adress copied!</div>
-      </div>
-
     </>
   )
 }
