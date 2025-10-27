@@ -382,6 +382,7 @@ function App() {
   const [showCopySeed, setShowCopySeed] = useState(false);
   const [showCopyHash, setShowCopyHash] = useState(false);
   const [showBalanceChanger, setShowBalanceChanger] = useState(false);
+  const [betsPlaced, setBetsPlaced] = useState(Math.floor(Math.random() * (90 - 10 + 1)) + 10);
 
   useEffect(() => {
     if (countActiveCells.current == 25 - traps) {
@@ -606,7 +607,7 @@ function App() {
                   </div>
                   <div className="mb-3 bet-container">
                     <label className="form-label">Number of Bets Placed with this Pair of Seeds</label>
-                    <input id="ember98" className="ember-text-field ember-view form-control form-control-updated" disabled="true" defaultValue={0} type="text" />
+                    <input id="ember98" className="ember-text-field ember-view form-control form-control-updated" disabled="true" defaultValue={betsPlaced} type="text" />
                   </div>
                 </div>
               </section>
